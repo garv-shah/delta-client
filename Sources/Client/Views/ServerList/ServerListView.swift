@@ -69,6 +69,21 @@ struct ServerListView: View {
   var body: some View {
     NavigationView {
       List {
+        HStack {
+          Image(packageResource: "Play", ofType: "svg")
+            Text("Play").font(.minecraftHeadlineRegular)
+        }
+
+        HStack {
+          Image(packageResource: "Settings", ofType: "svg")
+          Text("Settings").font(.minecraftHeadlineRegular)
+        }
+
+        HStack {
+          Image(packageResource: "Update", ofType: "svg")
+          Text("Update").font(.minecraftHeadlineRegular)
+        }
+
         if !pingers.isEmpty {
           ForEach(pingers, id: \.self) { pinger in
             NavigationLink(destination: ServerDetail(pinger: pinger)) {

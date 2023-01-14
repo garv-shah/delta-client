@@ -21,6 +21,9 @@ struct DeltaClientApp: App {
 
     DiscordManager.shared.updateRichPresence(to: .menu)
 
+    // Register custom fonts
+    CustomFonts.registerCustomFonts()
+
     // Load plugins, registries and resources
     taskQueue.async {
       var startupProgress = TaskProgress<StartupStep>()
