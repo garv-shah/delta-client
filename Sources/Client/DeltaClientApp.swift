@@ -157,6 +157,7 @@ struct DeltaClientApp: App {
         .environmentObject(Self.pluginEnvironment)
         .navigationTitle("Delta Client")
     }
+    .windowStyle(HiddenTitleBarWindowStyle())
     .commands {
       // Add preferences menu item and shortcut (cmd+,)
       CommandGroup(after: .appSettings, addition: {

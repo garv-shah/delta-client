@@ -26,10 +26,10 @@ struct ServerListView: View {
       lanServerEnumerator = LANServerEnumerator(eventBus: eventBus)
       eventBus.registerHandler { event in
         switch event {
-          case let event as ErrorEvent:
-            log.warning("\(event.message ?? "Error"): \(event.error)")
-          default:
-            break
+        case let event as ErrorEvent:
+          log.warning("\(event.message ?? "Error"): \(event.error)")
+        default:
+          break
         }
       }
 
@@ -66,66 +66,90 @@ struct ServerListView: View {
     appState.update(to: .settings(.update))
   }
 
+  let buttons = ["Play", "Settings", "Update"]
+  @State public var buttonSelected: Int?
+
   var body: some View {
-    NavigationView {
-      List {
-        HStack {
-          Image(packageResource: "Play", ofType: "svg")
-            Text("Play").font(.minecraftHeadlineRegular)
-        }
-
-        HStack {
-          Image(packageResource: "Settings", ofType: "svg")
-          Text("Settings").font(.minecraftHeadlineRegular)
-        }
-
-        HStack {
-          Image(packageResource: "Update", ofType: "svg")
-          Text("Update").font(.minecraftHeadlineRegular)
-        }
-
-        if !pingers.isEmpty {
-          ForEach(pingers, id: \.self) { pinger in
-            NavigationLink(destination: ServerDetail(pinger: pinger)) {
-              ServerListItem(pinger: pinger)
-            }
+      ZStack {
+          Color.black.ignoresSafeArea()
+          
+          NavigationView {
+              ZStack {
+                  Color(red: 0.112, green: 0.112, blue: 0.112).ignoresSafeArea()
+                  List {
+                      VStack(alignment: .leading, spacing: 14) {
+                        ForEach(0..<buttons.count) { button in
+                          Button(action: {
+                            self.buttonSelected = button
+                            print("\(self.buttons[button]) button pressed")
+                          }) {
+                            HStack {
+                              Image(packageResource: self.buttons[button], ofType: "svg")
+                                .resizable()
+                                .frame(width: 16.0, height: 16.0)
+                              Text(self.buttons[button])
+                                .font(.minecraftHeadlineRegular)
+                            }
+                              .frame(minWidth: 100, maxWidth: .infinity, minHeight: 16, maxHeight: 50, alignment: .leading)
+                              .contentShape(RoundedRectangle(cornerSize: CGSize(width: 6, height: 6)))
+                          }
+                            .padding(8)
+                            .buttonStyle(.plain)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(self.buttonSelected == button ? Color(red: 0.168, green: 0.168, blue: 0.168) : Color.clear)
+                            .cornerRadius(6)
+                        }
+                      }
+                      
+                      if !pingers.isEmpty {
+                          ForEach(pingers, id: \.self) { pinger in
+                              NavigationLink(destination: ServerDetail(pinger: pinger)) {
+                                  ServerListItem(pinger: pinger)
+                              }
+                          }
+                      } else {
+                          Text("no servers").italic()
+                      }
+                      
+                      Divider()
+                      
+                      if let lanServerEnumerator = lanServerEnumerator {
+                          LANServerList(lanServerEnumerator: lanServerEnumerator)
+                      } else {
+                          Text("LAN scan failed").italic()
+                      }
+                      
+                      HStack {
+                          // Edit
+                          IconButton("square.and.pencil") {
+                              appState.update(to: .editServerList)
+                          }
+                          
+                          // Refresh servers
+                          IconButton("arrow.clockwise") {
+                              refresh()
+                          }
+                          
+                          // Direct connect
+                          IconButton("personalhotspot") {
+                              appState.update(to: .directConnect)
+                          }
+                      }
+                      
+                      if (model.updateAvailable) {
+                          Button("Update", action: update).padding(.top, 5)
+                      }
+                  }
+                    .toolbar {
+                      Button(action: { } ) {}
+                    }
+                    .presentedWindowToolbarStyle(UnifiedWindowToolbarStyle())
+                  .listStyle(SidebarListStyle())
+              }
           }
-        } else {
-          Text("no servers").italic()
-        }
-
-        Divider()
-
-        if let lanServerEnumerator = lanServerEnumerator {
-          LANServerList(lanServerEnumerator: lanServerEnumerator)
-        } else {
-          Text("LAN scan failed").italic()
-        }
-
-        HStack {
-          // Edit
-          IconButton("square.and.pencil") {
-            appState.update(to: .editServerList)
+          .onDisappear {
+              lanServerEnumerator?.stop()
           }
-
-          // Refresh servers
-          IconButton("arrow.clockwise") {
-            refresh()
-          }
-
-          // Direct connect
-          IconButton("personalhotspot") {
-            appState.update(to: .directConnect)
-          }
-        }
-
-        if (model.updateAvailable) {
-          Button("Update", action: update).padding(.top, 5)
-        }
       }
-      .listStyle(SidebarListStyle())
-    }.onDisappear {
-      lanServerEnumerator?.stop()
-    }
   }
 }

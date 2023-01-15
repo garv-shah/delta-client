@@ -26,7 +26,8 @@ struct RouterView: View {
         case .error(let message, let safeState):
           ErrorView(message: message, safeState: safeState)
       }
-    }.onChange(of: appState.current) { newValue in
+    }
+    .onChange(of: appState.current) { newValue in
       // Update Discord rich presence based on the current app state
       switch newValue {
         case .serverList:
